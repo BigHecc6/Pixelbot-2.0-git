@@ -3,5 +3,6 @@ module.exports = {
     once: true,
     execute(client) {
         console.log(`Established connection to server!`);
+        
     },
 };

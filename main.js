@@ -58,6 +58,43 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
+const statusQ = [
+	"hot black men",
+	"with balls",
+	"with penises",
+	"with my cock",
+	"fortnite",
+	"my parents rap battling",
+	"gay sex",
+	"confederate women",
+	"with the boys"
+]
+const statusT = [
+	"WATCHING",
+	"PLAYING",
+	"PLAYING",
+	"PLAYING",
+	"PLAYING",
+	"LISTENING",
+	"WATCHING",
+	"WATCHING",
+	"PLAYING"
+]
 
+client.once('ready', () => {
+	status();
+})
 //Login to bot
 client.login(process.env.DICKSWORD);
+
+
+
+async function status() {
+
+	let ranStat = Math.floor(Math.random()*statusT.length);
+	console.log(ranStat);
+	client.user.setActivity(statusQ[ranStat], { type: statusT[ranStat] });
+	console.log('Changed status');
+	setInterval(status, Number(1.8E6));
+	
+}
