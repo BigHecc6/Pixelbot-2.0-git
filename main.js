@@ -1,7 +1,6 @@
 //Call main modules
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
-const { prefix, token } = require('./config.json');
 const dotenv = require('dotenv');
 dotenv.config();
 
