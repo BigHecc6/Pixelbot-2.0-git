@@ -20,6 +20,8 @@ module.exports = {
         .setRequired(true)),
 
   async execute(client, interaction, ops, url) {
+    let member = await interaction.member.fetch();
+    if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to play music.`, ephemeral: true });
     let data = ops.active.get(interaction.guild.id) || {};
     let vid;
     let qChannel = interaction.channel;
@@ -38,7 +40,7 @@ module.exports = {
 
     //Identifies the member and the vc they're in
     let uid = interaction.user.id;
-    let member = await interaction.member.fetch();
+    
     let guild = interaction.guild;
     //Join the vc
     data.connection = joinVoiceChannel({

@@ -19,7 +19,8 @@ module.exports = {
         .setRequired(true)),
 
   async execute(client, interaction, ops) {
-    let queue = {};
+    let member = await interaction.member.fetch();
+    if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to play music.`, ephemeral: true });
     const vid = interaction.options.getString('song');
     interaction.reply('Searching for **' + vid + '**...');
     //If the video isn't in url form, search for it.

@@ -10,8 +10,9 @@ module.exports = {
     .setDescription('Skips the current song playing'),
   async execute(client, interaction, ops) {
     let fetched = ops.active.get(interaction.guild.id);
-    if (!fetched) return interaction.reply("There currently isn't any music playing.");
+    if (!fetched) return interaction.reply({ content: `There currently isn't any music playing.`, ephemeral: true });
     let member = await interaction.member.fetch();
+    if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to skip the song!`, ephemeral: true });
     let title = fetched.queue[0].songTitle;
     for(var i in noSkip) {
       if (title.toLowerCase().includes(noSkip[i])) {
