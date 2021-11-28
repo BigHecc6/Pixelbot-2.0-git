@@ -58,40 +58,6 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-// Old Message Handler, don't touch!!!!!!!!
-
-
-
-
-/* client.on('message', message => {
-	console.log(`${message.author}: ` + message.content);
-
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-	const args = message.content.slice(prefix.length).split(/ +/);
-	const commandName = args.shift().toLowerCase();
-	const ops = {
-		active: active
-	}
-
-	if (!client.commands.has(commandName)) return;
-
-	const command = client.commands.get(commandName);
-
-	if (command.guildOnly && message.channel.type !== 'text') return message.channel.send('You can only use this command in the server.');
-	if (command.perms && !message.member.permissions.has(command.perms)) return message.reply("You don't have the required permissions to use this command.");
-	const quecha = message.guild.channels.find(quecha => quecha.id === '894356371942805525');
-	if (command.musicCMD && message.channel !== quecha) return message.channel.send(`Please put music-related commands in the ${quecha} channel.`);
-	// if (command.musicCMD && !message.member.voice.channel) return message.reply("I can only do this if you're in a voice channel.");
-
-	try {
-		command.execute(client, message, args, ops);
-	} catch (error) {
-			console.log(error);
-			message.reply('an error occured.');
-	}
-}); */
-
 
 //Login to bot
 client.login(process.env.DICKSWORD);
