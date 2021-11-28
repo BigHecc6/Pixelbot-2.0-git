@@ -60,4 +60,5 @@ client.on('interactionCreate', async interaction => {
 
 
 //Login to bot
+client.user.setActivity('big black men', { type: 'WATCHING' });
 client.login(process.env.DICKSWORD);
