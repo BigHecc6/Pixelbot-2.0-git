@@ -49,6 +49,8 @@ module.exports = {
       adapterCreator: interaction.guild.voiceAdapterCreator,
     });
     console.log(`joining and playing ${vid}`);
+    try { await interaction.reply(`Loading song...`); }
+    catch(err) { await interaction.editReply(`Loading song...`); }
     let info;
     try {
       info = await ytdl.getInfo(vid, {
@@ -86,7 +88,7 @@ module.exports = {
       .setThumbnail(info.videoDetails.thumbnails[0].url)
       .setFooter(`Requested by ${interaction.user.username}. #${data.queue.length-1} in queue.`, `${interaction.user.displayAvatarURL()}`)
 
-
+    interaction.deleteReply();
     if (!data.stream) {
       await playsong(client, ops, data, qChannel, true);
       

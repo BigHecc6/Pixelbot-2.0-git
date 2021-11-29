@@ -71,11 +71,12 @@ module.exports = {
                 collector.once('collect', async i => {
                     if (i.customId === 'selectVid') {
                         if (i.user.id !== interaction.user.id) return;
-                        await interaction.deleteReply();
                         video = i.values[0];
                         
-                        await i.update({ content: `Video selected: ${video}.`, components: [] });
+                        
+                        
                         let commandFile = require('./play.js');
+                        await i.update({ content: 'Video chosen.' });
                         await i.deleteReply();
                         collector.stop();
                         
