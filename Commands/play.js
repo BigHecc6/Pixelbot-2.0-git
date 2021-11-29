@@ -84,7 +84,7 @@ module.exports = {
       .setURL(vid)
       .setDescription(`By: ${info.videoDetails.author.name}\n\nDuration: (${min}:${sec})\n\n`)
       .setThumbnail(info.videoDetails.thumbnails[0].url)
-      .setFooter(`Requested by ${interaction.user.username}.`, `${interaction.user.displayAvatarURL()}`)
+      .setFooter(`Requested by ${interaction.user.username}. #${data.queue.length-1} in queue.`, `${interaction.user.displayAvatarURL()}`)
 
 
     if (!data.stream) {
