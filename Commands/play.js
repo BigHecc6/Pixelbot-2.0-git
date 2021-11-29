@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageSelectMenu, MessageActionRow, Message, Client, IntegrationApplication } = require('discord.js');
+const { MessageSelectMenu, MessageActionRow, Message, Client, IntegrationApplication, MessageEmbed } = require('discord.js');
 const yt = require('ytdl-core');
 const ffmpeg = require('ffmpeg');
 const search = require('yt-search');
@@ -65,24 +65,48 @@ module.exports = {
     }
     if (!data.queue) data.queue = [];
     data.guildID = interaction.guild.id;
+    let min = Math.floor(info.videoDetails.lengthSeconds/60);
+    let sec = info.videoDetails.lengthSeconds-min*60;
+    console.log(info.videoDetails);
     // Push a new song into the queue
     data.queue.push({
       songTitle: info.videoDetails.title,
+      author: info.videoDetails.author.name,
       requester: interaction.user,
       url: vid,
-      thumb: info.thumbnail_url,
+      thumb: info.videoDetails.thumbnails[0].url,
+      duration: `${min}:${sec}`,
     })
+     let embedQ = new MessageEmbed()
+      .setColor('#E74C3C')
+      .setAuthor('ADDED TO QUEUE:')
+      .setTitle(`${info.videoDetails.title}`)
+      .setURL(vid)
+      .setDescription(`By: ${info.videoDetails.creator}\n\nDuration: (${min}:${sec})\n\n`)
+      .setThumbnail(info.videoDetails.thumbnails[0].url)
+      .setFooter(`Requested by ${interaction.user.username}.`, `${interaction.user.displayAvatarURL()}`)
 
 
-    if (!data.stream) await playsong(client, ops, data, qChannel);
-    else {
-      interaction.channel.send(`${info.videoDetails.title} added to queue. | Requested by: ${interaction.user}.`);
+    if (!data.stream) {
+      await playsong(client, ops, data, qChannel, true);
+      
+    } else {
+      interaction.channel.send({ embeds: [embedQ] });
     }
     ops.active.set(interaction.guild.id, data);
 
-    async function playsong(client, ops, data, qchan)
+    async function playsong(client, ops, data, qchan, showNP)
     {
-      qchan.send(`Now Playing: ${data.queue[0].songTitle} | Requested By: ${data.queue[0].requester}.`);
+      let embedP = new MessageEmbed()
+      .setColor('#E74C3C')
+      .setAuthor('NOW PLAYING:')
+      .setTitle(`${data.queue[0].songTitle}`)
+      .setURL(data.queue[0].url)
+      .setDescription(`By: ${data.queue[0].author}\n\nDuration: (${data.queue[0].duration})\n\n`)
+      .setThumbnail(`${data.queue[0].thumb}`)
+      .setFooter(`Requested by ${data.queue[0].requester.username}.`, `${data.queue[0].requester.displayAvatarURL()}`)
+
+      if (showNP) qchan.send({ embeds: [embedP] });
       try { 
         data.stream = ytdl(data.queue[0].url, {
           filter: 'audioonly',
@@ -115,7 +139,7 @@ module.exports = {
       fetched.queue.shift();
       if (fetched.queue.length > 0) {
         ops.active.set(data.stream.guildID, fetched);
-        playsong(client, ops, data, qchan);
+        playsong(client, ops, data, qchan, false);
       } else {
         ops.active.delete(data.stream.guildID);
         data.connection.destroy();
