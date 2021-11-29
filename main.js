@@ -61,7 +61,7 @@ const statusQ = [
 	"with an early access build"
 ]
 const statusT = [
-	"WATCHING",
+	"PLAYING",
 ]
 
 client.once('ready', () => {
