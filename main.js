@@ -58,26 +58,10 @@ client.on('interactionCreate', async interaction => {
 });
 
 const statusQ = [
-	"hot black men",
-	"with balls",
-	"with penises",
-	"with my cock",
-	"fortnite",
-	"my parents rap battling",
-	"gay sex",
-	"confederate women",
-	"with the boys"
+	"with an early access build"
 ]
 const statusT = [
 	"WATCHING",
-	"PLAYING",
-	"PLAYING",
-	"PLAYING",
-	"PLAYING",
-	"LISTENING",
-	"WATCHING",
-	"WATCHING",
-	"PLAYING"
 ]
 
 client.once('ready', () => {
@@ -91,9 +75,8 @@ client.login(process.env.DICKSWORD);
 async function status() {
 
 	let ranStat = Math.floor(Math.random()*statusT.length);
-	console.log(ranStat);
 	client.user.setActivity(statusQ[ranStat], { type: statusT[ranStat] });
-	console.log('Changed status');
+	console.log(`Changed status to: ${statusT[ranStat]} ${statusQ[ranStat]}`);
 	setInterval(status, Number(1.8E6));
 	
 }
