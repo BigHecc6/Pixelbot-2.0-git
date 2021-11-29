@@ -1,10 +1,12 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
+  musicCommand: true,
+  guildOnly: true,
   data: new SlashCommandBuilder()
     .setName('queue')
     .setDescription("Shows what songs are queues and provides controls."),
-  async execute(client, interaction, ops) {
+  async execute(client, interaction, ops, dj) {
     let fetched = ops.active.get(interaction.guild.id);
     if (!fetched) return interaction.reply(`**There currently isn't any music playing.**`);
     let queue = fetched.queue;

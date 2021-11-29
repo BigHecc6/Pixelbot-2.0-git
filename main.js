@@ -36,7 +36,6 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
-
 //Message Listener
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;

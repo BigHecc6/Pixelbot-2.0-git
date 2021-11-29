@@ -8,7 +8,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('skip')
     .setDescription('Skips the current song playing'),
-  async execute(client, interaction, ops) {
+  async execute(client, interaction, ops,) {
     let fetched = ops.active.get(interaction.guild.id);
     if (!fetched) return interaction.reply({ content: `There currently isn't any music playing.`, ephemeral: true });
     let member = await interaction.member.fetch();
@@ -23,11 +23,12 @@ module.exports = {
     let userCount = interaction.guild.me.voice.channel.members.size;
 
     let required = Math.ceil(userCount/2);
+    
     if (!fetched.queue[0].voteSkips) fetched.queue[0].voteSkips = [];
     if (fetched.queue[0].voteSkips.includes(interaction.user.id)) return interaction.reply({ content: `You already voted to skip! **${fetched.queue[0].voteSkips.length}/${required} required.` });
     fetched.queue[0].voteSkips.push(interaction.user.id);
     ops.active.set(interaction.guild.id, fetched);
-    if (fetched.queue[0].voteSkips.length >= required) {
+    if (fetched.queue[0].voteSkips.length >= required || interaction.member.roles.cache.some(role => role.name.toLowerCase() === 'dj')) {
       if (!fetched.queue[1]) {
         interaction.reply(`**${fetched.queue[0].songTitle}** skipped.`);
         return fetched.connection.destroy();

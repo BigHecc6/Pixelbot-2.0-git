@@ -10,6 +10,7 @@ let urlV;
 
 module.exports = {
     //Registers the play command
+    guildOnly: true,
   data: new SlashCommandBuilder()
     .setName('search')
     .setDescription('Searches for a song.')
