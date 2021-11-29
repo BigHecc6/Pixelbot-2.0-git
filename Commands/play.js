@@ -82,7 +82,7 @@ module.exports = {
       .setAuthor('ADDED TO QUEUE:')
       .setTitle(`${info.videoDetails.title}`)
       .setURL(vid)
-      .setDescription(`By: ${info.videoDetails.creator}\n\nDuration: (${min}:${sec})\n\n`)
+      .setDescription(`By: ${info.videoDetails.author.name}\n\nDuration: (${min}:${sec})\n\n`)
       .setThumbnail(info.videoDetails.thumbnails[0].url)
       .setFooter(`Requested by ${interaction.user.username}.`, `${interaction.user.displayAvatarURL()}`)
 
