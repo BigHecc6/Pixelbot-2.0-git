@@ -135,7 +135,13 @@ module.exports = {
       data.player.on('error', err => {
         console.log(err);
         qchan.send(`An error occurred. Attempting to start song from beginning`);
+        try {
         data.player.play(resource);
+        }
+        catch (error) {
+          console.log(error);
+          qchan.send(`Failed to start song`);
+        }
       })
       data.player.on(AudioPlayerStatus.Idle, () => {
         endofsong(client, ops, data, qchan);
