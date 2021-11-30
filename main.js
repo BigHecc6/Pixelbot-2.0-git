@@ -71,7 +71,6 @@ client.once('ready', () => {
 client.login(process.env.DICKSWORD);
 
 
-
 async function status() {
 
 	let ranStat = Math.floor(Math.random()*statusT.length);

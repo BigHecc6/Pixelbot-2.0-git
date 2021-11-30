@@ -17,3 +17,4 @@ const rest = new REST({ version: '9' }).setToken(process.env.DICKSWORD);
 rest.put(Routes.applicationCommands(process.env.CLID), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))
 	.catch(console.error);
+

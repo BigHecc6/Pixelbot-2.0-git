@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { AudioPlayerStatus } = require('@discordjs/voice');
-const noSkip = ['ram ranch', '3 big balls', 'three big balls', 'gay nigga hours'];
+const noSkip = ['ram ranch', '3 big balls', 'three big balls', 'gay nigga hours', 'touch-tone telephone', 'touch tone telephone', 'cabinet man'];
 
 module.exports = {
   guildOnly: true,
