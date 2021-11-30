@@ -66,7 +66,7 @@ module.exports = {
       return console.log(err);
     }
     if (!data.queue) data.queue = [];
-    if (!data.loop) data.loop = false;
+    if (!data.loop) data.loop = "no";
     data.guildID = interaction.guild.id;
     let min = Math.floor(info.videoDetails.lengthSeconds/60);
     let sec = info.videoDetails.lengthSeconds-min*60;
@@ -128,6 +128,7 @@ module.exports = {
 
       data.stream.guildID = data.guildID;
       const resource = createAudioResource(data.stream, { inputType: StreamType.Arbitrary });
+      data.resource = resource;
       data.player = createAudioPlayer();
       data.player.play(resource);
       
@@ -136,7 +137,7 @@ module.exports = {
         console.log(err);
         qchan.send(`An error occurred. Attempting to start song from beginning`);
         try {
-        data.player.play(resource);
+        playsong(client, ops, data, qchan, false);
         }
         catch (error) {
           console.log(error);
@@ -149,7 +150,10 @@ module.exports = {
     }
 
     async function endofsong(client, ops, data, qchan) {
-      let fetched = ops.active.get(data.stream.guildID)
+      let fetched = ops.active.get(data.stream.guildID);
+      if (fetched.loop === "yes") {
+        return playsong(client, ops, data, qchan, false);
+      }
       fetched.queue.shift();
       if (fetched.queue.length > 0) {
         ops.active.set(data.stream.guildID, fetched);
