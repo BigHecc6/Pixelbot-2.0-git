@@ -29,6 +29,7 @@ module.exports = {
     fetched.queue[0].voteSkips.push(interaction.user.id);
     ops.active.set(interaction.guild.id, fetched);
     if (fetched.queue[0].voteSkips.length >= required || interaction.member.roles.cache.some(role => role.name.toLowerCase() === 'dj')) {
+      fetched.loop = "no";
       if (!fetched.queue[1]) {
         interaction.reply(`**${fetched.queue[0].songTitle}** skipped.`);
         return fetched.connection.destroy();

@@ -11,12 +11,12 @@ module.exports = {
     if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to skip the song!`, ephemeral: true });
 
     switch (fetched.loop) {
-      case ('yes'):
-        fetched.loop = 'no';
-        interaction.reply(`**${fetched.queue[0].songTitle}** will now loop :arrows_clockwise:`);
-        break;
       case ('no'):
         fetched.loop = 'yes';
+        interaction.reply(`**${fetched.queue[0].songTitle}** will now loop :arrows_clockwise:`);
+        break;
+      case ('yes'):
+        fetched.loop = 'no';
         interaction.reply(`**${fetched.queue[0].songTitle}** will no longer loop :arrow_right:`);
         break;
     }
