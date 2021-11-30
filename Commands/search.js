@@ -3,8 +3,6 @@ const { MessageSelectMenu, MessageActionRow, Message, Client, IntegrationApplica
 const yt = require('ytdl-core');
 const ffmpeg = require('ffmpeg');
 const search = require('yt-search');
-const wait = require('util').promisify(setTimeout);
-const ytdl = require('ytdl-core');
 let urlV;
 
 
@@ -84,10 +82,11 @@ module.exports = {
                     }
                 })
                 collector.on('end', collected => {
-                console.log(video);
-                urlV = video;
-                let commandFile = require('./play.js');
-                return commandFile.execute(client, interaction, ops, urlV);
+
+                    console.log(video);
+                    urlV = video;
+                    let commandFile = require('./play.js');
+                    return commandFile.execute(client, interaction, ops, urlV);
                 })
 
             })

@@ -66,10 +66,11 @@ module.exports = {
       return console.log(err);
     }
     if (!data.queue) data.queue = [];
+    if (!data.loop) data.loop = false;
     data.guildID = interaction.guild.id;
     let min = Math.floor(info.videoDetails.lengthSeconds/60);
     let sec = info.videoDetails.lengthSeconds-min*60;
-    console.log(info.videoDetails);
+    
     // Push a new song into the queue
     data.queue.push({
       songTitle: info.videoDetails.title,
@@ -129,8 +130,13 @@ module.exports = {
       const resource = createAudioResource(data.stream, { inputType: StreamType.Arbitrary });
       data.player = createAudioPlayer();
       data.player.play(resource);
-      console.log(data.player.eventNames());
+      
       const subscription = data.connection.subscribe(data.player);
+      data.player.on('error', err => {
+        console.log(err);
+        qchan.send(`An error occurred. Attempting to start song from beginning`);
+        data.player.play(resource);
+      })
       data.player.on(AudioPlayerStatus.Idle, () => {
         endofsong(client, ops, data, qchan);
       })
