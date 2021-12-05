@@ -49,11 +49,27 @@ client.on('interactionCreate', async interaction => {
 	if (command.guildOnly && !interaction.guild) {
 		return interaction.reply({ content: `You can only use this command while in a server!`, ephemeral: true });
 	}
+	if (command.perms) {
+		if (interaction.guild.ownerId != interaction.member.id)
+		{
+			for (var p in command.perms) {
+				if (interaction.member.permissions.missing(p, { checkAdmin: true, checkOwner: true })) {
+					return interaction.reply({ content: `You don't have the permissions to use this command.`, ephemeral: true });
+				}
+			}
+		}
+	}
 	try {
 		await command.execute(client, interaction, ops);
 	} catch (error) {
 		console.error(error);
-		return interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		try {
+			return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+		catch {
+			return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+		
 	}
 });
 

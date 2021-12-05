@@ -57,7 +57,7 @@ module.exports = {
                             {
                             label: `${videos[i].title}`,
                             description: videos[i].author.name,
-                            value: `${videos[i].url}`,
+                            value: `${videos[i].url}`
                             },
                         ]),
                     );
@@ -83,7 +83,7 @@ module.exports = {
                 })
                 collector.on('end', collected => {
 
-                    console.log(video);
+                    
                     urlV = video;
                     let commandFile = require('./play.js');
                     return commandFile.execute(client, interaction, ops, urlV);

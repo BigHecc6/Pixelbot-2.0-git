@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { AudioPlayerStatus } = require('@discordjs/voice');
+const { Permissions } = require('discord.js');
 const noSkip = ['ram ranch', '3 big balls', 'three big balls', 'gay nigga hours', 'touch-tone telephone', 'touch tone telephone', 'cabinet man'];
 
 module.exports = {
@@ -8,35 +9,50 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('skip')
     .setDescription('Skips the current song playing'),
-  async execute(client, interaction, ops,) {
+  async execute(client, interaction, ops) {
+    try { await interaction.deferReply(); } catch(err) { console.log('Assuming we are coming from another command.'); }
+    
     let fetched = ops.active.get(interaction.guild.id);
-    if (!fetched) return interaction.reply({ content: `There currently isn't any music playing.`, ephemeral: true });
+    if (!fetched) return interaction.followUp({ content: `There currently isn't any music playing.`, ephemeral: true });
     let member = await interaction.member.fetch();
-    if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to skip the song!`, ephemeral: true });
+    if (!member.voice.channel) return interaction.followUp({ content: `You need to be in a voice channel in order to skip the song!`, ephemeral: true });
     let title = fetched.queue[0].songTitle;
     for(var i in noSkip) {
       if (title.toLowerCase().includes(noSkip[i])) {
-        return interaction.reply({content: `** You shall not skip ${title}.**`, ephemeral: true });
+        return interaction.followUp({content: `** You shall not skip ${title}.**`, ephemeral: true });
       }
     }
     let qchan = interaction.channel.id;
     let userCount = interaction.guild.me.voice.channel.members.size;
-
+    
+    if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true)) {
+      fetched.loop = "no";
+      if (!fetched.queue[1]) {
+        await interaction.followUp(`**${fetched.queue[0].songTitle}** skipped.`);
+        return fetched.connection.destroy();
+      }
+      await interaction.followUp(`**${fetched.queue[0].songTitle}** skipped.`);
+      return fetched.player.emit(AudioPlayerStatus.Idle);
+    }
     let required = Math.ceil(userCount/2);
     
     if (!fetched.queue[0].voteSkips) fetched.queue[0].voteSkips = [];
-    if (fetched.queue[0].voteSkips.includes(interaction.user.id)) return interaction.reply({ content: `You already voted to skip! **${fetched.queue[0].voteSkips.length}/${required} required.` });
+    if (fetched.queue[0].voteSkips.includes(interaction.user.id)) return interaction.followUp({ content: `You already voted to skip! **${fetched.queue[0].voteSkips.length}/${required} required.**`, ephemeral: true });
     fetched.queue[0].voteSkips.push(interaction.user.id);
     ops.active.set(interaction.guild.id, fetched);
-    if (fetched.queue[0].voteSkips.length >= required || interaction.member.roles.cache.some(role => role.name.toLowerCase() === 'dj')) {
+    if (fetched.queue[0].voteSkips.length >= required) {
       fetched.loop = "no";
       if (!fetched.queue[1]) {
-        interaction.reply(`**${fetched.queue[0].songTitle}** skipped.`);
+        await interaction.followUp(`**${fetched.queue[0].songTitle}** skipped.`);
+
         return fetched.connection.destroy();
       }
-      interaction.reply(`**${fetched.queue[0].songTitle}** skipped.`);
+      interaction.followUp(`**${fetched.queue[0].songTitle}** skipped.`);
       return fetched.player.emit(AudioPlayerStatus.Idle);
+      
     }
+    //const user = interaction.user;
+    interaction.followUp(`${user} has voted to skip! **${fetched.queue[0].voteSkips.length}/${required} required to skip.**`);
   }
 }
 

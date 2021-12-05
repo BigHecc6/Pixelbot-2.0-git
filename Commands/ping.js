@@ -5,6 +5,6 @@ module.exports = {
     .setName('ping')
     .setDescription('Replies with Pong!'),
   async execute(client, interaction, ops) {
-    await interaction.reply('Pong!');
+    await interaction.reply(`Pong!`);
   }
 }
