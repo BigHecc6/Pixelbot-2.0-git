@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageSelectMenu, MessageActionRow, Message, Client, IntegrationApplication, MessageEmbed } = require('discord.js');
 const { AudioPlayerStatus,StreamType,createAudioPlayer,createAudioResource,joinVoiceChannel,VoiceConnectionStatus } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
+const noSkip = ['ram ranch', '3 big balls', 'three big balls', 'gay nigga hours', 'touch-tone telephone', 'touch tone telephone', 'cabinet man'];
 const ytpl = require('ytpl');
 // This cookie allows ytdl-core to return age-restricted videos.
 const COOKIE = 'VISITOR_INFO1_LIVE=1ajDgCOjhxU; YSC=BNVGtMvpPs4; PREF=tz=America.New_York&f6=40000000; HSID=A5C7Z4x1ibDlFczca; SSID=AICCFlsra24sA5Yd4; APISID=4iloUmvf1jKg7pt7/ABzUG8cFLRPFPwCFq; SAPISID=mENu4bRbT3andHPc/AkjOVLA2E6dlFoVQh; __Secure-1PAPISID=mENu4bRbT3andHPc/AkjOVLA2E6dlFoVQh; __Secure-3PAPISID=mENu4bRbT3andHPc/AkjOVLA2E6dlFoVQh; LOGIN_INFO=AFmmF2swRQIgT_prNoUqV74SvR_7uBCJEC-x7oZBTJYQHT6SoantJm4CIQDHZvSUdOBRVVZuhbaeHX60nvA0av2qRbk0vjMEQ8II7A:QUQ3MjNmeDNScXNkQ3pySUd0NkNYMjBlYndmZTdWcksxei1BbVhTY2UyVy00SkVLQXpEcWxia0wwQ050RktMQWJLWGxKNnBHblEwbkhwQ1Q4S2VKOEZhcnBCU3BrRkRKTmZSM1JaTTdLRU1SVGJqRzhVWDFYUTZuVWJYdXQ1R052WWhhcFZtVXRhbmpnSVZnMWJwRzRSTnJkVmRPd084MUJn; SID=EQjU4GyoI2HejRNYVC-622UT5BVcRmhjRHcmJyfM8OVYLdpdQh2Ng03f5w_fASSSGcPBXA.; __Secure-1PSID=EQjU4GyoI2HejRNYVC-622UT5BVcRmhjRHcmJyfM8OVYLdpdyp8oGRFjjoTn1O_HOkC-tw.; __Secure-3PSID=EQjU4GyoI2HejRNYVC-622UT5BVcRmhjRHcmJyfM8OVYLdpdWJroY-YjNf8bX2pJLeQdBw.; CONSISTENCY=AGDxDeNshEhhJ-WWt_050aISC12V_CRw5SWEf4zLFjlGW9Ew-Q5HkP-lU8XoPonwidc8Ek4wXJuzxfHWJDhudxUZLzewtVZKXUXcYsw1Pud3khaHm-B0LnAjfwShv8DE-nKf_HQKqjXoW10sENWxfKnS; SIDCC=AJi4QfG5nHBzwtnkdFvRagDDwqyXTFwmnQkzp_yA2hAP-FGIZdaHeW667FaS69YFJyF1I4wEKpo; __Secure-3PSIDCC=AJi4QfESFsM5CfIsazvONnofi3X0T978j0BeFu24T8kiGstV-nn2H9dipg7o7_3-JNHbpE8gjQ';
@@ -15,11 +16,15 @@ module.exports = {
     .addStringOption(option => 
       option.setName('song')
         .setDescription('Insert the title or URL of a YouTube video.')
-        .setRequired(true)),
+        .setRequired(true))
+    .addBooleanOption(option =>
+      option.setName('now')
+        .setDescription('Whether to start song now or put it in queue')),
 
   async execute(client, interaction, ops, url) {
     
     let member = await interaction.member.fetch();
+    let now = interaction.options.getBoolean('now');
     if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to play music.`, ephemeral: true });
     let data = ops.active.get(interaction.guild.id) || {};
     let vid;
@@ -101,14 +106,27 @@ module.exports = {
       if (sec < 10) {
         sec = `0${info.videoDetails.lengthSeconds-min*60}`;
       }
-      data.queue.push({
-        songTitle: info.videoDetails.title,
-        author: info.videoDetails.author.name,
-        requester: interaction.user,
-        url: vid,
-        thumb: info.videoDetails.thumbnails[0].url,
-        duration: `${min}:${sec}`
-      })
+      if (now) {
+        data.queue.unshift({
+          songTitle: info.videoDetails.title,
+          author: info.videoDetails.author.name,
+          requester: interaction.user,
+          url: vid,
+          thumb: info.videoDetails.thumbnails[0].url,
+          duration: `${min}:${sec}`,
+          durationSec: info.videoDetails.lengthSeconds
+        })
+      } else {
+        data.queue.push({
+          songTitle: info.videoDetails.title,
+          author: info.videoDetails.author.name,
+          requester: interaction.user,
+          url: vid,
+          thumb: info.videoDetails.thumbnails[0].url,
+          duration: `${min}:${sec}`,
+          durationSec: info.videoDetails.lengthSeconds
+        })
+      }
     }
     let qLength;
     if (validateP) {
@@ -126,6 +144,7 @@ module.exports = {
           plAuthor: info.author.name,
           plThumb: info.bestThumbnail.url,
           plUrl: info.url,
+          durationSec: info.items[pp].durationSec
         })
       }
     }
@@ -154,7 +173,7 @@ module.exports = {
     }
 
     interaction.deleteReply();
-    if (!data.stream) {
+    if (!data.stream || now) {
       await playsong(client, ops, data, qChannel, true);
       
     } else {
@@ -239,10 +258,37 @@ module.exports = {
     }
     
     data.connection.on(VoiceConnectionStatus.Destroyed, () => {
+      for (var i in noSkip) {
+        try {
+          if (data.queue[0].songTitle.toLowerCase().includes(noSkip[i])) {
+            data.connection.rejoin();
+            qChannel.send(`**YOU SHALL NOT STOP ME FROM PLAYING ${data.queue[0].songTitle}!!!**`);
+            return playsong(client, ops, data, qChannel, false);
+          }
+        }
+        catch (err) {
+          console.log(`I'm sorry, father. I couldn't stop them from skipping it...`);
+        }
+        
+      }
+ 
       ops.active.delete(data.stream.guildID);
       data.queue = [];
     })
     data.connection.on(VoiceConnectionStatus.Disconnected, () => {
+      for (var i in noSkip) {
+        try {
+          if (data.queue[0].songTitle.toLowerCase().includes(noSkip[i])) {
+            data.connection.rejoin();
+            qChannel.send(`**YOU SHALL NOT STOP ME FROM PLAYING ${data.queue[0].songTitle}!!!**`);
+            return playsong(client, ops, data, qChannel, false);
+          }
+        }
+        catch (err) {
+          console.log(`I'm sorry, father. I couldn't stop them from skipping it...`);
+        }
+        
+      }
       ops.active.delete(data.stream.guildID);
       data.queue = [];
     })

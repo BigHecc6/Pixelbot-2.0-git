@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton, ContextMenuInteraction } = require('discord.js');
 
 module.exports = {
   musicCommand: true,
@@ -9,6 +9,9 @@ module.exports = {
     .setName('queue')
     .setDescription("Shows what songs are queues and provides controls."),
   async execute(client, interaction, ops, dj) {
+    let combTime = 0;
+    let cMin;
+    let cSec;
     let fetched = ops.active.get(interaction.guild.id);
     if (!fetched) return interaction.reply(`**There currently isn't any music playing.**`);
     let queue = fetched.queue;
@@ -73,6 +76,7 @@ module.exports = {
             skippy.execute(client, interaction, ops);
             await i.update({ embeds: [embed], components: [row] });
             collector.resetTimer();
+            updater();
             break;
           case 'next':
             if (pageN >= maxPages) {}
@@ -112,32 +116,47 @@ module.exports = {
 
 
     async function updater() {
-      nowPlaying = queue[0];
       timeStamp = Math.floor(fetched.resource.playbackDuration/1000);
+      combTime = parseInt(queue[0].durationSec-timeStamp);
+      nowPlaying = queue[0];
+      for (var i in queue) {
+        combTime += parseInt(queue[i].durationSec);
+      }
+      combTime -= queue[0].durationSec;
+      
+      cMin = Math.floor(combTime/60);
+      
+      cSec = combTime-cMin*60;
+      if (cSec < 10) { cSec = `0${combTime-cMin*60}`; }
+      np.setURL(nowPlaying.url);
+      
       min = Math.floor(timeStamp/60);
       sec = timeStamp-min*60;
       if (sec < 10) {
         sec = `0${timeStamp-min*60}`;
       }
       queueList = queue.slice(-10+(pageN*10), 10*pageN);
+      let curMax;
+      if (10*pageN >= queue.length) curMax = queue.length; else curMax = 10*pageN;
       let penisidk = 10*(pageN-1);
       embed.setTitle(`Page ${pageN}:`);
+      embed.setFooter(`${-10+(pageN*10)+1} of ${curMax} of ${queue.length} --- ${cMin}:${cSec} remaining`);
       if (fetched.player.state.status === 'paused') {
         embed.setColor('#E74C3C')
-        embed.setDescription(`**NOW PLAYING: [PAUSED] ${nowPlaying.songTitle}**\n(${min}:${sec}/${nowPlaying.duration}) **-----** _Requester: ${nowPlaying.requester}_\n**----------------------------------**`);
+        embed.setDescription(`**NOW PLAYING: [PAUSED] __${nowPlaying.songTitle}__** by **${nowPlaying.author}**\n(${min}:${sec}/${nowPlaying.duration}) **-----** _Requester: ${nowPlaying.requester}_\n**----------------------------------**`);
       } else {
         embed.setColor('#50C878')
-        embed.setDescription(`**NOW PLAYING: ${nowPlaying.songTitle}**\n(${min}:${sec}/${nowPlaying.duration}) **-----** _Requester: ${nowPlaying.requester}_\n**----------------------------------**`);
+        embed.setDescription(`**NOW PLAYING: __${nowPlaying.songTitle}__** by **${nowPlaying.author}**\n(${min}:${sec}/${nowPlaying.duration}) **-----** _Requester: ${nowPlaying.requester}_\n**----------------------------------**`);
       }
       
       embed.fields = [];
       for (var i in queueList) {
         if (queue[1]) {
           let ii = parseInt(i)+1+penisidk;
-          embed.addField(`**[#${ii}]: ${queue[ii-1].songTitle}**`, `(${queue[ii-1].duration}) **-----** _Requester: ${queue[ii-1].requester}_`);
+          embed.addField(`**[#${ii}]: __${queue[ii-1].songTitle}__** by **${queue[ii-1].author}**`, `(${queue[ii-1].duration}) **-----** _Requester: ${queue[ii-1].requester}_`);
         }
       }
-
+      
       await interaction.editReply({ embeds: [embed], components: [row] });
       
 
