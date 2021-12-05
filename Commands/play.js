@@ -96,8 +96,11 @@ module.exports = {
     let min;
     let sec;
     if (validateV) {
-      let min = Math.floor(info.videoDetails.lengthSeconds/60);
-      let sec = info.videoDetails.lengthSeconds-min*60;
+      min = Math.floor(info.videoDetails.lengthSeconds/60);
+      sec = info.videoDetails.lengthSeconds-min*60;
+      if (sec < 10) {
+        sec = `0${info.videoDetails.lengthSeconds-min*60}`;
+      }
       data.queue.push({
         songTitle: info.videoDetails.title,
         author: info.videoDetails.author.name,

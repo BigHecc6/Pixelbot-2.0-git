@@ -95,7 +95,7 @@ module.exports = {
             updater();
             break;
           case 'prev':
-            if (pageN -= 1) {}
+            if (pageN <= 1) {}
             else { pageN -= 1; }
             
             await i.update({ embeds: [embed], components: [] });
