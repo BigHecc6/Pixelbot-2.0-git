@@ -80,7 +80,7 @@ module.exports = {
       }
     } else if (validateP) {
       try {
-        info = await ytpl(vid, { requestOptions: { headers: { cookie: COOKIE, } } });
+        info = await ytpl(vid, { limit: Infinity, requestOptions: { headers: { cookie: COOKIE, } } });
       }
       catch (err) {
         interaction.editReply(`Loading song... **FAILED.**`)
@@ -88,7 +88,7 @@ module.exports = {
         return console.log(err);
       }
     }
-    console.log(info.items);
+    
     console.log(info);
 
 
