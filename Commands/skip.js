@@ -43,7 +43,6 @@ module.exports = {
       }
       
       let origLength = fetched.queue.length;
-      fetched.player.emit(AudioPlayerStatus.Idle);
       for (var i = amount; fetched.queue.length != origLength - i;) {
         fetched.queue.shift();
       }
