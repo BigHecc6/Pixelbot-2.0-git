@@ -230,11 +230,11 @@ module.exports = {
         console.log(err);
         qchan.send(`An error occurred. Attempting to start song from beginning`);
         try {
-        playsong(client, ops, data, qchan, false);
+        return playsong(client, ops, data, qchan, false);
         }
         catch (error) {
           console.log(error);
-          qchan.send(`Failed to start song`);
+          return qchan.send(`Failed to start song`);
         }
       })
       data.player.on(AudioPlayerStatus.Idle, () => {

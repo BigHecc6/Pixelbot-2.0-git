@@ -66,7 +66,7 @@ module.exports = {
       
     }
     //const user = interaction.user;
-    interaction.followUp(`${user} has voted to skip! **${fetched.queue[0].voteSkips.length}/${required} required to skip.**`);
+    interaction.followUp(`${interaction.user} has voted to skip! **${fetched.queue[0].voteSkips.length}/${required} required to skip.**`);
     interaction.followUp({ content: `You must have the MANAGE_MESSAGES permission to skip multiple songs at once.`, ephemeral: true });
   }
 }
