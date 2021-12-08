@@ -22,10 +22,13 @@ module.exports = {
         .setDescription('Whether to start song now or put it in queue')),
 
   async execute(client, interaction, ops, url) {
-    
+    //Check to make sure someone is in vc
     let member = await interaction.member.fetch();
-    let now = interaction.options.getBoolean('now');
     if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to play music.`, ephemeral: true });
+    
+    //Play now
+    let now = interaction.options.getBoolean('now');
+    
     let data = ops.active.get(interaction.guild.id) || {};
     let vid;
     let qChannel = interaction.channel;
@@ -100,14 +103,14 @@ module.exports = {
     
     let min;
     let sec;
-    if (validateV) {
+    if (validateV) { //duration shit
       min = Math.floor(info.videoDetails.lengthSeconds/60);
       sec = info.videoDetails.lengthSeconds-min*60;
       if (sec < 10) {
         sec = `0${info.videoDetails.lengthSeconds-min*60}`;
       }
       if (now) {
-        data.queue.unshift({
+        data.queue.unshift({ //Push the song to the start of the queue
           songTitle: info.videoDetails.title,
           author: info.videoDetails.author.name,
           requester: interaction.user,
@@ -117,7 +120,7 @@ module.exports = {
           durationSec: info.videoDetails.lengthSeconds
         })
       } else {
-        data.queue.push({
+        data.queue.push({ //Push the song to the end of the queue
           songTitle: info.videoDetails.title,
           author: info.videoDetails.author.name,
           requester: interaction.user,
@@ -129,7 +132,7 @@ module.exports = {
       }
     }
     let qLength;
-    if (validateP) {
+    if (validateP) { //Push each video in the playlist into the queue
       qLength = data.queue.length;
       for (var pp in info.items) {
         data.queue.push({
@@ -151,9 +154,8 @@ module.exports = {
 
 
 
-    // Push a new song into the queue
     let embedQ = new MessageEmbed()
-    if (validateV) {
+    if (validateV) { //Video embed
         embedQ.setColor('#E74C3C')
         embedQ.setAuthor('ADDED TO QUEUE:')
         embedQ.setTitle(`${info.videoDetails.title}`)
@@ -162,7 +164,7 @@ module.exports = {
         embedQ.setThumbnail(info.videoDetails.thumbnails[0].url)
         embedQ.setFooter(`Requested by ${interaction.user.username}. #${data.queue.length-1} in queue.`, `${interaction.user.displayAvatarURL()}`)
     }
-    if (validateP) {
+    if (validateP) { //Playlist embed
         embedQ.setColor('#E74C3C')
         embedQ.setAuthor(`ADDED ${info.items.length} SONGS TO QUEUE:`)
         embedQ.setTitle(`${info.title}`)
@@ -173,6 +175,7 @@ module.exports = {
     }
 
     interaction.deleteReply();
+    // If there isn't a song playing or the song is supposed to play now, play it
     if (!data.stream || now) {
       await playsong(client, ops, data, qChannel, true);
       
@@ -183,7 +186,7 @@ module.exports = {
 
     async function playsong(client, ops, data, qchan, showNP)
     {
-
+      //Now playing embed
       let embedP = new MessageEmbed()
         .setColor('#E74C3C')
         .setAuthor('NOW PLAYING:')
@@ -201,9 +204,9 @@ module.exports = {
         embedP.setFooter(`Requested by ${data.queue[0].requester.username}.`, `${data.queue[0].requester.displayAvatarURL()}`);
       }
 
-
-      if (showNP) qchan.send({ embeds: [embedP] });
-      try { 
+      
+      if (showNP) qchan.send({ embeds: [embedP] }); //The now playing embed will only show once.
+      try {  //Try pulling the video
         data.stream = ytdl(data.queue[0].url, {
           filter: 'audioonly',
           requestOptions: {
@@ -218,7 +221,7 @@ module.exports = {
         console.log(err);
         endofsong(client, ops, data);
       }
-
+      //Start playing the song
       data.stream.guildID = data.guildID;
       const resource = createAudioResource(data.stream, { inputType: StreamType.Arbitrary });
       data.resource = resource;
@@ -226,7 +229,7 @@ module.exports = {
       data.player.play(resource);
       
       const subscription = data.connection.subscribe(data.player);
-      data.player.on('error', err => {
+      data.player.on('error', err => { //some make-shift way to handle errors during playback
         console.log(err);
         qchan.send(`An error occurred. Attempting to start song from beginning`);
         try {
@@ -237,17 +240,21 @@ module.exports = {
           return qchan.send(`Failed to start song`);
         }
       })
-      data.player.on(AudioPlayerStatus.Idle, () => {
+      data.player.on(AudioPlayerStatus.Idle, () => { //Go to endofsong() after what's playing has ended
         endofsong(client, ops, data, qchan);
       })
     }
 
     async function endofsong(client, ops, data, qchan) {
       let fetched = ops.active.get(data.stream.guildID);
+
+      //If the song's supposed to loop, loop it.
       if (fetched.loop === "yes") {
         return playsong(client, ops, data, qchan, false);
       }
-      fetched.queue.shift();
+      fetched.queue.shift(); //Remove the song that just ended from queue
+
+      //If there's more in the queue, play the next one. If not, leave the voice channel
       if (fetched.queue.length > 0) {
         ops.active.set(data.stream.guildID, fetched);
         playsong(client, ops, data, qchan, false);
@@ -257,6 +264,7 @@ module.exports = {
       }
     }
     
+    //Disconnect handler
     data.connection.on(VoiceConnectionStatus.Destroyed, () => {
       for (var i in noSkip) {
         try {

@@ -9,11 +9,14 @@ module.exports = {
     .setName('queue')
     .setDescription("Shows what songs are queues and provides controls."),
   async execute(client, interaction, ops, dj) {
+    //Check if there's anything in the queue.
+    let fetched = ops.active.get(interaction.guild.id);
+    if (!fetched) return interaction.reply({ content:`**There currently isn't any music playing.**`, ephemeral: true });
+   
+    //Initialize variables
     let combTime = 0;
     let cMin;
     let cSec;
-    let fetched = ops.active.get(interaction.guild.id);
-    if (!fetched) return interaction.reply(`**There currently isn't any music playing.**`);
     let queue = fetched.queue;
     let nowPlaying = queue[0];
     let timeStamp = Math.floor(fetched.resource.playbackDuration/1000);
@@ -30,7 +33,7 @@ module.exports = {
     let queueList = queue.slice(0*pageN, 10*pageN);
     
 
-    //Now for the buttons lmao
+    //Embed buttons
     const prev = new MessageButton()
       .setCustomId('prev')
       .setLabel('<')
@@ -62,12 +65,13 @@ module.exports = {
         next
       )
 
+    //Initial message
     await interaction.reply({ embeds: [embed], components: [row] });
     updater();
 
 
     const collector = interaction.channel.createMessageComponentCollector({ componentType: 'BUTTON', time: 15000 });
-      
+    //Button collecting yay  
     collector.on('collect', async i => {
       if (i.user.id === interaction.user.id) {
         switch (i.customId) {
@@ -116,6 +120,7 @@ module.exports = {
 
 
     async function updater() {
+      //This will run any time something happens while the queue menu is still up.
       timeStamp = Math.floor(fetched.resource.playbackDuration/1000);
       combTime = parseInt(queue[0].durationSec-timeStamp);
       nowPlaying = queue[0];

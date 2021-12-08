@@ -1,5 +1,7 @@
 //Call main modules
 const fs = require('fs');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
 const { Client, Collection, Intents } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -18,12 +20,20 @@ const active = new Map();
 
 //Command handling
 client.commands = new Collection();
+const commands = [];
 const commandFiles = fs.readdirSync('./Commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
 	const command = require(`./Commands/${file}`);
 	client.commands.set(command.data.name, command);
+	commands.push(command.data.toJSON());
 }
+//Command Deployer
+const rest = new REST({ version: '9' }).setToken(process.env.DICKSWORD);
+
+rest.put(Routes.applicationCommands(process.env.CLITID), { body: commands })
+	.then(() => console.log('Commands have been deployed.'))
+	.catch(console.error);
 
 //Event Handler
 const eventFiles = fs.readdirSync('./Events').filter(file => file.endsWith('.js'));
