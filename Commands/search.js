@@ -1,8 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageSelectMenu, MessageActionRow, Message, Client, IntegrationApplication } = require('discord.js');
+const { MessageSelectMenu, MessageActionRow, Message, Client, IntegrationApplication, MessageButton } = require('discord.js');
 const yt = require('ytdl-core');
 const ffmpeg = require('ffmpeg');
 const search = require('yt-search');
+
 let urlV;
 
 
@@ -19,9 +20,9 @@ module.exports = {
 
   async execute(client, interaction, ops) {
     let member = await interaction.member.fetch();
-    if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to play music.`, ephemeral: true });
+    if (!member.voice.channel) return interaction.editReply({ content: `You need to be in a voice channel in order to play music.`, ephemeral: true });
     const vid = interaction.options.getString('song');
-    interaction.reply('Searching for **' + vid + '**...');
+    await interaction.editReply('Searching for **' + vid + '**...');
     //If the video isn't in url form, search for it.
     const validate = yt.validateURL(vid);
     try {
@@ -49,7 +50,7 @@ module.exports = {
                     .setPlaceholder('No video selected')
 
                 const row = new MessageActionRow()
-
+                
                 //Adds selection for each video
                 for (var i in videos) {
                     row.setComponents(
@@ -62,11 +63,16 @@ module.exports = {
                         ]),
                     );
                 }
-                interaction.followUp({ content: resp, components: [row] });
+
+                let messages;
+                interaction.followUp({ content: resp, components: [row] }).then (msg => {
+                    messages = msg;
+                });
                 //Collects video selection
                 const filter = i => i.customId === 'selectVid';
                 const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
                 let video;
+                //let searchTimer = setInterval(collector.stop(), 5000);
                 collector.once('collect', async i => {
                     if (i.customId === 'selectVid') {
                         if (i.user.id !== interaction.user.id) return;
@@ -83,7 +89,19 @@ module.exports = {
                 })
                 collector.on('end', collected => {
 
+                        
                     
+                    var balls = collected.map(balls => balls.values);
+                    //console.log(balls[0]);
+                    //console.log(collected);
+                    console.log(messages);
+                    
+                    if (balls[0] === undefined) {
+                        interaction.deleteReply();
+                        messages.edit({content: '**No video was chosen.**', components: []});
+                        return;
+                    }
+
                     urlV = video;
                     let commandFile = require('./play.js');
                     return commandFile.execute(client, interaction, ops, urlV);

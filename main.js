@@ -46,9 +46,11 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
+
 //Message Listener
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
+	await interaction.deferReply();
 
 	const command = client.commands.get(interaction.commandName);
 	const ops = {
@@ -75,35 +77,32 @@ client.on('interactionCreate', async interaction => {
 		await command.execute(client, interaction, ops);
 	} catch (error) {
 		console.error(error);
-		try {
-			return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
-		}
-		catch {
-			return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		if (interaction.isRepliable) {
+			return await interaction.reply({ content: 'There was an error while executing this command!\n```' + error + '```', ephemeral: true });
+		} else {
+			return await interaction.editReply({ content: 'There was an error while executing this command!\n```' + error + '```', ephemeral: true })
 		}
 		
 	}
 });
 
-const statusQ = [
-	"with an early access build"
-]
-const statusT = [
-	"PLAYING",
+const status = [
+	["with Carson's mom's entiddies", "PLAYING"],
+	["thughunter.com", "WATCHING"]
 ]
 
 client.once('ready', () => {
-	status();
+	statusSet();
 })
 //Login to bot
 client.login(process.env.DICKSWORD);
 
 
-async function status() {
+async function statusSet() {
 
-	let ranStat = Math.floor(Math.random()*statusT.length);
-	client.user.setActivity(statusQ[ranStat], { type: statusT[ranStat] });
-	console.log(`Changed status to: ${statusT[ranStat]} ${statusQ[ranStat]}`);
-	setInterval(status, Number(1.8E6));
+	let ranStat = Math.floor(Math.random()*status.length);
+	client.user.setActivity(status[ranStat][0], { type: status[ranStat][1] });
+	console.log(`Changed status to: ${status[ranStat][1]} ${status[ranStat][0]}`);
+	setInterval(statusSet, Number(1.8E6));
 	
 }

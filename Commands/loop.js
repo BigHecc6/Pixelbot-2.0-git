@@ -7,19 +7,19 @@ module.exports = {
   async execute(client, interaction, ops) {
     //Precautions
     let fetched = ops.active.get(interaction.guild.id);
-    if (!fetched) return interaction.reply({ content: `There currently isn't any music playing.`, ephemeral: true });
+    if (!fetched) return interaction.editReply({ content: `There currently isn't any music playing.`, ephemeral: true });
     let member = await interaction.member.fetch();
-    if (!member.voice.channel) return interaction.reply({ content: `You need to be in a voice channel in order to skip the song!`, ephemeral: true });
+    if (!member.voice.channel) return interaction.editReply({ content: `You need to be in a voice channel in order to skip the song!`, ephemeral: true });
     
     //Toggle loop
     switch (fetched.loop) {
       case ('no'):
         fetched.loop = 'yes';
-        interaction.reply(`**${fetched.queue[0].songTitle}** will now loop :arrows_clockwise:`);
+        interaction.editReply(`**${fetched.queue[0].songTitle}** will now loop :arrows_clockwise:`);
         break;
       case ('yes'):
         fetched.loop = 'no';
-        interaction.reply(`**${fetched.queue[0].songTitle}** will no longer loop :arrow_right:`);
+        interaction.editReply(`**${fetched.queue[0].songTitle}** will no longer loop :arrow_right:`);
         break;
     }
 

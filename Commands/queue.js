@@ -11,7 +11,7 @@ module.exports = {
   async execute(client, interaction, ops, dj) {
     //Check if there's anything in the queue.
     let fetched = ops.active.get(interaction.guild.id);
-    if (!fetched) return interaction.reply({ content:`**There currently isn't any music playing.**`, ephemeral: true });
+    if (!fetched) return interaction.editReply({ content:`**There currently isn't any music playing.**`, ephemeral: true });
    
     //Initialize variables
     let combTime = 0;
@@ -66,7 +66,7 @@ module.exports = {
       )
 
     //Initial message
-    await interaction.reply({ embeds: [embed], components: [row] });
+    await interaction.followUp({ embeds: [embed], components: [row] });
     updater();
 
 
